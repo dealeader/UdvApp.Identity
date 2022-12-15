@@ -1,6 +1,8 @@
-﻿using IdentityServer4.Services;
+﻿using System.Text.Json;
+using IdentityServer4.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using UdvApp.Identity.Data;
 using UdvApp.Identity.Models;
 
 namespace UdvApp.Identity.Controllers
@@ -12,15 +14,18 @@ namespace UdvApp.Identity.Controllers
         private readonly SignInManager<AppUser> _signInManager;
         private readonly UserManager<AppUser> _userManager;
         private readonly IIdentityServerInteractionService _interactionService;
+        private readonly AuthDbContext _dbContext;
 
         public AuthController(
             IIdentityServerInteractionService interactionService,
             UserManager<AppUser> userManager,
-            SignInManager<AppUser> signInManager)
+            SignInManager<AppUser> signInManager,
+            AuthDbContext dbContext)
         {
             _interactionService = interactionService;
             _userManager = userManager;
             _signInManager = signInManager;
+            _dbContext = dbContext;
         }
 
         [HttpPost]
@@ -54,18 +59,35 @@ namespace UdvApp.Identity.Controllers
             {
                 Email = request.Email,
                 UserName = request.Email,
-                FirstName = "testFirstName",
-                LastName = "testLastName",
-                Patronymic = "testPatronymic"
+                FirstName = request.FirstName,
+                LastName = request.LastName,
+                PhoneNumber = request.Phone,
             };
 
             var result = await _userManager.CreateAsync(user, password);
 
             if (result.Succeeded)
             {
+                var userInfo = new UserInfo
+                {
+                    UserId = user.Id,
+                    Email = user.Email,
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    Phone = user.PhoneNumber,
+                    UniversityName = request.UniversityName,
+                    UniversityFaculty = request.UniversityFaculty,
+                    UniversitySpeciality = request.UniversitySpeciality,
+                    UniversityCourseNumber = request.UniversityCourseNumber,
+                    USSCTargets = JsonSerializer.Serialize(request.USSCTargets),
+                    USSCTargetDates = request.USSCTargetDates
+                };
+
+                await _dbContext.UserInfos.AddAsync(userInfo);
+                await _dbContext.SaveChangesAsync();
                 //SMTP
+                
                 await _signInManager.SignInAsync(user, isPersistent: false);
-                request.ReturnUrl = "https://localhost:7079/";
                 return Ok(request.ReturnUrl);
             }
             

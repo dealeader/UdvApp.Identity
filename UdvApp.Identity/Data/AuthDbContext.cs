@@ -5,17 +5,19 @@ using UdvApp.Identity.Models;
 using UdvApp.Identity.Data.EntityTypeConfigurations;
 namespace UdvApp.Identity.Data
 {
-    public class AuthDbContext : IdentityDbContext<AppUser>
+    public class AuthDbContext : IdentityDbContext<AppUser>, IAuthDbContext
     {
+        public DbSet<UserInfo> UserInfos { get; set; }
+
         public AuthDbContext(DbContextOptions<AuthDbContext> options) : base(options)
         {
-
         }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
 
+            builder.Entity<UserInfo>(entity => entity.ToTable(name: "UserInfos"));
             builder.Entity<AppUser>(entity => entity.ToTable(name: "Users"));
             builder.Entity<IdentityRole>(entity => entity.ToTable(name: "Roles"));
             builder.Entity<IdentityUserRole<string>>(entity => entity.ToTable(name: "UserRoles"));
@@ -26,5 +28,10 @@ namespace UdvApp.Identity.Data
 
             builder.ApplyConfiguration(new AppUserConfiguration());
         }
+    }
+
+    public interface IAuthDbContext
+    {
+        
     }
 }
