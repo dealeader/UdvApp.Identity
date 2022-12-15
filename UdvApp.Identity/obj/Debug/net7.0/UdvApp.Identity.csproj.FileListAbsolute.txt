@@ -156,3 +156,7 @@ G:\Solutions\UdvApp.Identity\UdvApp.Identity\obj\Debug\net7.0\refint\UdvApp.Iden
 G:\Solutions\UdvApp.Identity\UdvApp.Identity\obj\Debug\net7.0\UdvApp.Identity.pdb
 G:\Solutions\UdvApp.Identity\UdvApp.Identity\obj\Debug\net7.0\UdvApp.Identity.genruntimeconfig.cache
 G:\Solutions\UdvApp.Identity\UdvApp.Identity\obj\Debug\net7.0\ref\UdvApp.Identity.dll
+G:\Solutions\UdvApp.Identity\UdvApp.Identity\bin\Debug\net7.0\PasswordGenerator.dll
+G:\Solutions\UdvApp.Identity\UdvApp.Identity\bin\Debug\net7.0\MailKit.dll
+G:\Solutions\UdvApp.Identity\UdvApp.Identity\bin\Debug\net7.0\MimeKit.dll
+G:\Solutions\UdvApp.Identity\UdvApp.Identity\bin\Debug\net7.0\BouncyCastle.Crypto.dll

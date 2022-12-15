@@ -27,6 +27,7 @@ namespace UdvApp.Identity.Data
             builder.Entity<IdentityRoleClaim<string>>(entity => entity.ToTable(name: "RoleClaims"));
 
             builder.ApplyConfiguration(new AppUserConfiguration());
+            builder.ApplyConfiguration(new UserInfoConfiguration());
         }
     }
 

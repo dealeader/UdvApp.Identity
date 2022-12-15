@@ -1,9 +1,16 @@
-﻿using System.Text.Json;
+﻿using System.Text;
+using System.Text.Json;
 using IdentityServer4.Services;
+using MailKit.Net.Smtp;
+using MailKit.Security;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using MimeKit;
+using MimeKit.Text;
+using PasswordGenerator;
 using UdvApp.Identity.Data;
 using UdvApp.Identity.Models;
+using UdvApp.Identity.Service.EmailService;
 
 namespace UdvApp.Identity.Controllers
 {
@@ -15,17 +22,20 @@ namespace UdvApp.Identity.Controllers
         private readonly UserManager<AppUser> _userManager;
         private readonly IIdentityServerInteractionService _interactionService;
         private readonly AuthDbContext _dbContext;
+        private readonly IEmailService _emailService;
 
         public AuthController(
             IIdentityServerInteractionService interactionService,
             UserManager<AppUser> userManager,
             SignInManager<AppUser> signInManager,
-            AuthDbContext dbContext)
+            AuthDbContext dbContext,
+            IEmailService emailService)
         {
             _interactionService = interactionService;
             _userManager = userManager;
             _signInManager = signInManager;
             _dbContext = dbContext;
+            _emailService = emailService;
         }
 
         [HttpPost]
@@ -51,10 +61,8 @@ namespace UdvApp.Identity.Controllers
 
         [HttpPost]
         [Route("Register")]
-        public async Task<IActionResult> Register(RegisterRequest request) 
+        public async Task<IActionResult> Register(RegisterRequest request)
         {
-            var password = "password";   
-
             var user = new AppUser
             {
                 Email = request.Email,
@@ -63,6 +71,13 @@ namespace UdvApp.Identity.Controllers
                 LastName = request.LastName,
                 PhoneNumber = request.Phone,
             };
+
+            var password = new Password(12)
+                .IncludeLowercase()
+                .IncludeNumeric()
+                .IncludeUppercase()
+                .IncludeSpecial()
+                .Next();
 
             var result = await _userManager.CreateAsync(user, password);
 
@@ -85,15 +100,22 @@ namespace UdvApp.Identity.Controllers
 
                 await _dbContext.UserInfos.AddAsync(userInfo);
                 await _dbContext.SaveChangesAsync();
-                //SMTP
-                
+
+                _emailService.SendEmail(new Email
+                {
+                    To = user.Email,
+                    Body = "Пароль для входа в UDV Summer School ",
+                    Subject = "Добро пожаловать в UDV Summer School"
+                }, password);
+
                 await _signInManager.SignInAsync(user, isPersistent: false);
+                
                 return Ok(request.ReturnUrl);
             }
-            
+
             return BadRequest(result.Errors);
         }
-
+        
         [HttpGet]
         [Route("[action]")]
         public async Task<IActionResult> Logout(string logoutId)

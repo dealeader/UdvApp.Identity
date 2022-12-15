@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using UdvApp.Identity;
 using UdvApp.Identity.Data;
 using UdvApp.Identity.Models;
+using UdvApp.Identity.Service.EmailService;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,6 +26,8 @@ catch (Exception ex)
     var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
     logger.LogError(ex, "An error occurred while app initializing");
 }
+
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 builder.Services.AddControllers();
 
